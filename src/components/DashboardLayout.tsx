@@ -125,7 +125,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                >
                  <Menu className="h-5 w-5" />
                </button>
-               <h1 className="text-xl font-semibold text-white">Dashboard</h1>
+               <h1 className="text-lg sm:text-xl font-semibold text-white">Dashboard</h1>
              </div>
              
              <div className="flex items-center space-x-4">

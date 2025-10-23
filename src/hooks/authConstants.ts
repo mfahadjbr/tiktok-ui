@@ -16,4 +16,5 @@ export const API_ENDPOINTS = {
   TIKTOK_TEST_USER: '/tiktok/add-test-user',
   TIKTOK_USER_PROFILE: '/tiktok/user-profile/',
   TIKTOK_USER_VIDEOS: '/tiktok/user-videos/',
+  TIKTOK_VIDEO_QUERY: '/tiktok/video-query/',
 } as const;

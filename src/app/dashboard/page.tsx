@@ -17,8 +17,11 @@ import {
 } from "lucide-react"
 import { useTikTokOverview } from "@/hooks"
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
+  const router = useRouter()
+  
   // Use TikTok overview hook
   const { 
     userProfile, 
@@ -63,27 +66,27 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#6C63FF]/10 via-[#FF2E97]/10 to-[#6C63FF]/10"></div>
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="flex items-center space-x-4">
                 {userProfile ? (
                   <>
                     <img 
                       src={userProfile.avatar_url} 
                       alt={userProfile.display_name}
-                      className="w-16 h-16 rounded-full"
+                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full"
                     />
-                    <div>
-                      <h2 className="text-2xl font-bold text-white">{userProfile.display_name}</h2>
-                      <p className="text-[#C5C5D2]">@{userProfile.username}</p>
-                      <p className="text-[#C5C5D2] text-sm mt-1">{userProfile.bio_description || 'No bio available'}</p>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg sm:text-2xl font-bold text-white truncate">{userProfile.display_name}</h2>
+                      <p className="text-[#C5C5D2] truncate">@{userProfile.username}</p>
+                      <p className="text-[#C5C5D2] text-xs sm:text-sm mt-1 line-clamp-2">{userProfile.bio_description || 'No bio available'}</p>
                     </div>
                   </>
                 ) : (
                   <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-[#2A1A4D] rounded-full animate-pulse"></div>
-                    <div>
-                      <div className="h-6 w-48 bg-[#2A1A4D] rounded animate-pulse mb-2"></div>
-                      <div className="h-4 w-32 bg-[#2A1A4D] rounded animate-pulse"></div>
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#2A1A4D] rounded-full animate-pulse"></div>
+                    <div className="flex-1">
+                      <div className="h-5 sm:h-6 w-32 sm:w-48 bg-[#2A1A4D] rounded animate-pulse mb-2"></div>
+                      <div className="h-3 sm:h-4 w-24 sm:w-32 bg-[#2A1A4D] rounded animate-pulse"></div>
                     </div>
                   </div>
                 )}
@@ -92,14 +95,14 @@ export default function DashboardPage() {
                 onClick={handleRefresh}
                 disabled={isLoading}
                 variant="outline"
-                className="bg-[#2A1A4D]/50 border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white"
+                className="bg-[#2A1A4D]/50 border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white w-full sm:w-auto"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <RefreshCw className="h-4 w-4" />
                 )}
-                Refresh
+                <span className="ml-2">Refresh</span>
               </Button>
             </div>
             
@@ -252,16 +255,16 @@ export default function DashboardPage() {
                             </div>
                           </>
                         )}
-                      </div>
-                      
+                  </div>
+                  
                       {/* Video Description */}
                       <p className="text-[#C5C5D2] text-sm leading-relaxed mb-3 line-clamp-2">
                         {video.video_description}
                       </p>
-                      
+                  
                       {/* Video Stats */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-4 text-[#C5C5D2]">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                        <div className="grid grid-cols-3 gap-2 text-[#C5C5D2]">
                           <div className="flex items-center space-x-1">
                             <Heart className="h-3 w-3" />
                             <span className="text-xs">{video.like_count}</span>
@@ -275,7 +278,7 @@ export default function DashboardPage() {
                             <span className="text-xs">{video.view_count}</span>
                           </div>
                         </div>
-                        <Badge variant="secondary" className="bg-[#1A103D] text-[#C5C5D2] text-xs">
+                        <Badge variant="secondary" className="bg-[#1A103D] text-[#C5C5D2] text-xs w-fit">
                           {formatDate(video.create_time)}
                         </Badge>
                       </div>
@@ -284,14 +287,17 @@ export default function DashboardPage() {
                       <Button
                         size="sm"
                         className="w-full bg-gradient-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white"
-                        onClick={() => window.open(video.share_url, '_blank')}
+                        onClick={() => {
+                          console.log('🎵 Clicking video with ID:', video.id)
+                          router.push(`/dashboard/video/${video.id}`)
+                        }}
                       >
-                        View Video
+                        View Details
                       </Button>
-                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+            </div>
             ) : (
               <div className="text-center py-8">
                 <p className="text-[#C5C5D2]">No videos found</p>
