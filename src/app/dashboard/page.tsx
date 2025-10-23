@@ -3,81 +3,56 @@
 import { DashboardLayout } from "@/components/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { 
   Users, 
   MessageSquare, 
   Heart, 
   Repeat2, 
   TrendingUp,
-  Eye
+  Eye,
+  RefreshCw,
+  AlertCircle,
+  Loader2
 } from "lucide-react"
+import { useTikTokOverview } from "@/hooks"
+import { useEffect } from "react"
 
 export default function DashboardPage() {
-  // Dummy data from the user
-  const userProfile = {
-    id: "1932850183718477824",
-    username: "MuhammadUz1654",
-    name: "Learn Ai With Uzair",
-    profile_image_url: "https://pbs.twimg.com/profile_images/1953065493281013760/FYrRwkZq_normal.jpg",
-    description: "Python, GenAI &\nAutomation 💡\nFor complete course visit my Yotube Channel : https://t.co/AP7yKEnC90",
-    verified: false,
-    verified_type: "none",
-    created_at: "2025-06-11T17:19:46.000Z",
-    location: null,
-    url: null,
-    public_metrics: {
-      followers_count: 0,
-      following_count: 0,
-      tweet_count: 28,
-      listed_count: 0
-    }
+  // Use TikTok overview hook
+  const { 
+    userProfile, 
+    userVideos, 
+    totalVideos,
+    isLoading, 
+    error, 
+    lastUpdated,
+    fetchOverviewData,
+    clearError 
+  } = useTikTokOverview()
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchOverviewData(false) // false = don't refresh, use cached data
+  }, [fetchOverviewData])
+
+  const handleRefresh = () => {
+    fetchOverviewData(true) // true = refresh data from API
   }
 
-  const tweets = [
-    {
-      id: "1973391679362109487",
-      text: "Part 32 | ✨ Python Join strings Magic! https://t.co/FIm4WKeJsz",
-      created_at: "2025-10-01T14:16:54.000Z",
-      public_metrics: {
-        retweet_count: 0,
-        reply_count: 0,
-        like_count: 0,
-        quote_count: 0,
-        impression_count: 10
-      }
-    },
-    {
-      id: "1970545917817180259",
-      text: "Part 30 | ✨ Python Find strings Magic! https://t.co/dYTxfnZMTd",
-      created_at: "2025-09-23T17:48:52.000Z",
-      public_metrics: {
-        retweet_count: 0,
-        reply_count: 0,
-        like_count: 0,
-        quote_count: 0,
-        impression_count: 9
-      }
-    },
-    {
-      id: "1969816498798522443",
-      text: "Part 29 | ✨ Python Count Strings Magic! https://t.co/I68HS7shL0",
-      created_at: "2025-09-21T17:30:25.000Z",
-      public_metrics: {
-        retweet_count: 0,
-        reply_count: 0,
-        like_count: 0,
-        quote_count: 0,
-        impression_count: 4
-      }
-    }
-  ]
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     })
+  }
+
+  const formatDuration = (seconds: number) => {
+    if (seconds === 0) return 'Photo'
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   return (
@@ -88,18 +63,68 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#6C63FF]/10 via-[#FF2E97]/10 to-[#6C63FF]/10"></div>
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           <div className="relative z-10">
-            <div className="flex items-center space-x-4 mb-6">
-              <img 
-                src={userProfile.profile_image_url} 
-                alt={userProfile.name}
-                className="w-16 h-16 rounded-full"
-              />
-              <div>
-                <h2 className="text-2xl font-bold text-white">{userProfile.name}</h2>
-                <p className="text-[#C5C5D2]">@{userProfile.username}</p>
-                <p className="text-[#C5C5D2] text-sm mt-1">{userProfile.description}</p>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                {userProfile ? (
+                  <>
+                    <img 
+                      src={userProfile.avatar_url} 
+                      alt={userProfile.display_name}
+                      className="w-16 h-16 rounded-full"
+                    />
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">{userProfile.display_name}</h2>
+                      <p className="text-[#C5C5D2]">@{userProfile.username}</p>
+                      <p className="text-[#C5C5D2] text-sm mt-1">{userProfile.bio_description || 'No bio available'}</p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-[#2A1A4D] rounded-full animate-pulse"></div>
+                    <div>
+                      <div className="h-6 w-48 bg-[#2A1A4D] rounded animate-pulse mb-2"></div>
+                      <div className="h-4 w-32 bg-[#2A1A4D] rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                )}
               </div>
+              <Button 
+                onClick={handleRefresh}
+                disabled={isLoading}
+                variant="outline"
+                className="bg-[#2A1A4D]/50 border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                Refresh
+              </Button>
             </div>
+            
+            {/* Error Display */}
+            {error && (
+              <div className="mb-4 p-3 bg-[#FF2E97]/10 border border-[#FF2E97]/30 rounded-lg flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-[#FF2E97]" />
+                <span className="text-[#FF2E97] text-sm">{error}</span>
+                <Button 
+                  onClick={clearError}
+                  variant="ghost"
+                  size="sm"
+                  className="text-[#FF2E97] hover:text-[#FF2E97] ml-auto"
+                >
+                  ×
+                </Button>
+              </div>
+            )}
+            
+            {/* Last Updated */}
+            {lastUpdated && (
+              <p className="text-[#C5C5D2] text-xs">
+                Last updated: {new Date(lastUpdated).toLocaleString()}
+              </p>
+            )}
           </div>
         </div>
 
@@ -111,7 +136,9 @@ export default function DashboardPage() {
               <Users className="h-4 w-4 text-[#6C63FF]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{userProfile.public_metrics.followers_count}</div>
+              <div className="text-2xl font-bold text-white">
+                {userProfile ? userProfile.follower_count : '...'}
+              </div>
               <p className="text-xs text-[#C5C5D2]">Total followers</p>
             </CardContent>
           </Card>
@@ -122,7 +149,9 @@ export default function DashboardPage() {
               <Users className="h-4 w-4 text-[#00F5FF]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{userProfile.public_metrics.following_count}</div>
+              <div className="text-2xl font-bold text-white">
+                {userProfile ? userProfile.following_count : '...'}
+              </div>
               <p className="text-xs text-[#C5C5D2]">Accounts following</p>
             </CardContent>
           </Card>
@@ -133,19 +162,23 @@ export default function DashboardPage() {
               <MessageSquare className="h-4 w-4 text-[#FF2E97]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{userProfile.public_metrics.tweet_count}</div>
+              <div className="text-2xl font-bold text-white">
+                {userProfile ? userProfile.video_count : '...'}
+              </div>
               <p className="text-xs text-[#C5C5D2]">All time videos</p>
             </CardContent>
           </Card>
 
           <Card className="bg-[#1A103D]/50 backdrop-blur-sm border-0 shadow-xl shadow-[#6C63FF]/30">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-[#C5C5D2]">Listed</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#C5C5D2]">Total Likes</CardTitle>
               <TrendingUp className="h-4 w-4 text-[#6C63FF]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{userProfile.public_metrics.listed_count}</div>
-              <p className="text-xs text-[#C5C5D2]">Times listed</p>
+              <div className="text-2xl font-bold text-white">
+                {userProfile ? userProfile.likes_count : '...'}
+              </div>
+              <p className="text-xs text-[#C5C5D2]">All time likes</p>
             </CardContent>
           </Card>
         </div>
@@ -156,49 +189,114 @@ export default function DashboardPage() {
             <CardTitle className="text-white">Recent Videos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {tweets.map((tweet) => (
-                <div key={tweet.id} className="p-4 bg-[#2A1A4D]/50 rounded-xl border-0 shadow-lg shadow-[#6C63FF]/20">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-3">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-[#2A1A4D]/50 rounded-xl overflow-hidden">
+                    <div className="h-48 bg-[#2A1A4D] animate-pulse"></div>
+                    <div className="p-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-8 h-8 bg-[#2A1A4D] rounded-full animate-pulse"></div>
+                        <div className="flex-1">
+                          <div className="h-4 w-24 bg-[#2A1A4D] rounded animate-pulse mb-1"></div>
+                          <div className="h-3 w-20 bg-[#2A1A4D] rounded animate-pulse"></div>
+                        </div>
+                      </div>
+                      <div className="h-3 w-full bg-[#2A1A4D] rounded animate-pulse mb-2"></div>
+                      <div className="h-3 w-3/4 bg-[#2A1A4D] rounded animate-pulse mb-3"></div>
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex space-x-4">
+                          <div className="h-3 w-8 bg-[#2A1A4D] rounded animate-pulse"></div>
+                          <div className="h-3 w-8 bg-[#2A1A4D] rounded animate-pulse"></div>
+                          <div className="h-3 w-8 bg-[#2A1A4D] rounded animate-pulse"></div>
+                        </div>
+                        <div className="h-3 w-16 bg-[#2A1A4D] rounded animate-pulse"></div>
+                      </div>
+                      <div className="h-8 w-full bg-[#2A1A4D] rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : userVideos.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userVideos.map((video) => (
+                  <div key={video.id} className="bg-[#2A1A4D]/50 rounded-xl border-0 shadow-lg shadow-[#6C63FF]/20 overflow-hidden">
+                    {/* Video Cover Image */}
+                    <div className="relative">
                       <img 
-                        src={userProfile.profile_image_url} 
-                        alt={userProfile.name}
-                        className="w-8 h-8 rounded-full"
+                        src={video.cover_image_url} 
+                        alt={video.title}
+                        className="w-full h-48 object-cover"
                       />
-                      <div>
-                        <p className="text-white font-medium">{userProfile.name}</p>
-                        <p className="text-[#C5C5D2] text-sm">@{userProfile.username}</p>
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="outline" className="bg-black/50 text-white border-white/30">
+                          {formatDuration(video.duration)}
+                        </Badge>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-[#2A1A4D] text-[#C5C5D2]">
-                      {formatDate(tweet.created_at)}
-                    </Badge>
+                    
+                    {/* Video Content */}
+                    <div className="p-4">
+                      {/* User Info */}
+                      <div className="flex items-center space-x-3 mb-3">
+                        {userProfile && (
+                          <>
+                            <img 
+                              src={userProfile.avatar_url} 
+                              alt={userProfile.display_name}
+                              className="w-8 h-8 rounded-full"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white font-medium truncate">{userProfile.display_name}</p>
+                              <p className="text-[#C5C5D2] text-sm truncate">@{userProfile.username}</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      
+                      {/* Video Description */}
+                      <p className="text-[#C5C5D2] text-sm leading-relaxed mb-3 line-clamp-2">
+                        {video.video_description}
+                      </p>
+                      
+                      {/* Video Stats */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-4 text-[#C5C5D2]">
+                          <div className="flex items-center space-x-1">
+                            <Heart className="h-3 w-3" />
+                            <span className="text-xs">{video.like_count}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <MessageSquare className="h-3 w-3" />
+                            <span className="text-xs">{video.comment_count}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Eye className="h-3 w-3" />
+                            <span className="text-xs">{video.view_count}</span>
+                          </div>
+                        </div>
+                        <Badge variant="secondary" className="bg-[#1A103D] text-[#C5C5D2] text-xs">
+                          {formatDate(video.create_time)}
+                        </Badge>
+                      </div>
+                      
+                      {/* View Button */}
+                      <Button
+                        size="sm"
+                        className="w-full bg-gradient-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white"
+                        onClick={() => window.open(video.share_url, '_blank')}
+                      >
+                        View Video
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <p className="text-[#C5C5D2] mb-4 leading-relaxed">{tweet.text}</p>
-                  
-                  <div className="flex items-center space-x-6 text-[#C5C5D2]">
-                    <div className="flex items-center space-x-1">
-                      <MessageSquare className="h-4 w-4" />
-                      <span className="text-sm">{tweet.public_metrics.reply_count}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Repeat2 className="h-4 w-4" />
-                      <span className="text-sm">{tweet.public_metrics.retweet_count}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Heart className="h-4 w-4" />
-                      <span className="text-sm">{tweet.public_metrics.like_count}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Eye className="h-4 w-4" />
-                      <span className="text-sm">{tweet.public_metrics.impression_count}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-[#C5C5D2]">No videos found</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

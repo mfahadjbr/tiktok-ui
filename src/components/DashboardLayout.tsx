@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks"
 import { 
   Home, 
   Upload, 
@@ -23,14 +24,11 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const router = useRouter()
+  const { logout, user } = useAuth()
 
   const handleLogout = () => {
-    // Clear any stored authentication data
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    
-    // Redirect to login page
-    router.push('/auth/login')
+    // Use the proper logout function from auth hook
+    logout()
   }
 
   const navigation = [
@@ -97,14 +95,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <User className="h-5 w-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">test@gmail.com</p>
+              <p className="text-sm font-medium text-white truncate">
+                {user?.email || 'user@example.com'}
+              </p>
               <p className="text-xs text-[#C5C5D2] truncate">Connected to TikTok</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#C5C5D2] hover:text-white"
+              className="text-[#C5C5D2] hover:text-white hover:bg-[#FF2E97]/20"
               onClick={handleLogout}
+              title="Logout"
             >
               <LogOut className="h-4 w-4" />
             </Button>
@@ -132,8 +133,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
                  </svg>
-                 <span className="hidden sm:inline">@MuhammadUz1654</span>
-                 <span className="sm:hidden">@MuhammadUz1654</span>
+               
                </div>
              </div>
            </div>
