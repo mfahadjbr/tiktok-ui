@@ -36,9 +36,10 @@ const useGoogleAuth = () => {
       const status: GoogleAuthStatus = await response.json();
       dispatch({ type: 'SET_STATUS', payload: status });
       return status;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error checking Google auth status:', err);
-      dispatch({ type: 'SET_ERROR', payload: err.message });
+      const errorMessage = err instanceof Error ? err.message : 'Failed to check Google auth status';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
       return null;
     }
   }, []);
@@ -68,9 +69,10 @@ const useGoogleAuth = () => {
       // Redirect to Google OAuth
       window.location.href = loginUrl;
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error initiating Google login:', err);
-      dispatch({ type: 'SET_ERROR', payload: err.message });
+      const errorMessage = err instanceof Error ? err.message : 'Failed to initiate Google login';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   }, [checkGoogleAuthStatus]);
@@ -183,9 +185,10 @@ const useGoogleAuth = () => {
       } else {
         throw new Error(authData.message || 'Authentication failed');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error handling Google callback:', err);
-      dispatch({ type: 'SET_ERROR', payload: err.message });
+      const errorMessage = err instanceof Error ? err.message : 'Failed to handle Google callback';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
       throw err;
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });

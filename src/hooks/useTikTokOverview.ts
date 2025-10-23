@@ -45,8 +45,8 @@ export default function useTikTokOverview() {
       } else {
         throw new Error(data.message || 'Failed to fetch user profile');
       }
-    } catch (err: any) {
-      const message = err?.message || 'Failed to fetch TikTok user profile';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch TikTok user profile';
       dispatch({ type: 'SET_ERROR', payload: message });
       console.error('❌ TikTok user profile error:', err);
       throw err;
@@ -94,8 +94,8 @@ export default function useTikTokOverview() {
       } else {
         throw new Error(data.message || 'Failed to fetch user videos');
       }
-    } catch (err: any) {
-      const message = err?.message || 'Failed to fetch TikTok user videos';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch TikTok user videos';
       dispatch({ type: 'SET_ERROR', payload: message });
       console.error('❌ TikTok user videos error:', err);
       throw err;

@@ -77,9 +77,9 @@ const useSignup = (): UseSignupReturn => {
       router.push('/auth/login');
       
       return signupData;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Signup error:', err);
-      const errorMessage = err.message || 'Signup failed. Please try again.';
+      const errorMessage = err instanceof Error ? err.message : 'Signup failed. Please try again.';
       setState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
       return null;
     }

@@ -1,4 +1,4 @@
-import { AuthState, User } from './types/authTypes';
+import { AuthState, User } from '../types/authTypes';
 
 export const initialAuthState: AuthState = {
   user: null,

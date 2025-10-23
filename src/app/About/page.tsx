@@ -67,7 +67,7 @@ export default function AboutPage() {
               Empowering Creators Worldwide
             </h1>
             <p className="text-xl md:text-2xl text-[#C5C5D2] mb-8 max-w-3xl mx-auto">
-              We're on a mission to democratize social media success by providing creators with the tools they need to grow, engage, and monetize their TikTok presence.
+              We&apos;re on a mission to democratize social media success by providing creators with the tools they need to grow, engage, and monetize their TikTok presence.
             </p>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function AboutPage() {
                   <Zap className="h-12 w-12 text-[#6C63FF] mx-auto mb-4" />
                   <h3 className="text-xl font-bold text-white mb-4">Innovation</h3>
                   <p className="text-[#C5C5D2]">
-                    We continuously push the boundaries of what's possible with AI and automation to stay ahead of the curve.
+                    We continuously push the boundaries of what&apos;s possible with AI and automation to stay ahead of the curve.
                   </p>
                 </CardContent>
               </Card>

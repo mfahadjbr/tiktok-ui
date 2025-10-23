@@ -126,9 +126,9 @@ const useLogin = (): UseLoginReturn => {
       router.push('/auth/connect');
       
       return loginData;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Login error:', err);
-      const errorMessage = err.message || 'Login failed. Please check your credentials and try again.';
+      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please check your credentials and try again.';
       setState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
       return null;
     }

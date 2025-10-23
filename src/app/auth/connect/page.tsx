@@ -15,7 +15,7 @@ export default function ConnectPage() {
   const router = useRouter()
   
   // Use the TikTok auth hook
-  const { initiateTikTokConnect, initiateTikTokTestUser, isLoading, error, success, authUrl, testUserUrl } = useTikTokAuth()
+  const { initiateTikTokConnect, initiateTikTokTestUser, isLoading, error } = useTikTokAuth()
 
   const handleConnectTikTok = async () => {
     try {

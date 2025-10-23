@@ -13,8 +13,7 @@ import {
   LogOut, 
   Menu, 
   X,
-  User,
-  Twitter
+  User
 } from "lucide-react"
 
 interface DashboardLayoutProps {
@@ -23,7 +22,6 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const router = useRouter()
   const { logout, user } = useAuth()
 
   const handleLogout = () => {

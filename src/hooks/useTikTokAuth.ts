@@ -67,8 +67,8 @@ export default function useTikTokAuth() {
       } else {
         throw new Error(data?.message || 'Failed to get TikTok auth URL');
       }
-    } catch (err: any) {
-      const message = err?.message || 'Failed to initiate TikTok auth';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to initiate TikTok auth';
       dispatch({ type: 'SET_ERROR', payload: message });
       console.error('❌ TikTok connect error:', err);
       throw err;
@@ -118,8 +118,8 @@ export default function useTikTokAuth() {
       } else {
         throw new Error(data?.message || 'Failed to get TikTok test user URL');
       }
-    } catch (err: any) {
-      const message = err?.message || 'Failed to initiate TikTok test user';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to initiate TikTok test user';
       dispatch({ type: 'SET_ERROR', payload: message });
       console.error('❌ TikTok test user error:', err);
       throw err;

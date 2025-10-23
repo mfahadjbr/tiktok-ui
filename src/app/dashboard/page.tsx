@@ -8,7 +8,6 @@ import {
   Users, 
   MessageSquare, 
   Heart, 
-  Repeat2, 
   TrendingUp,
   Eye,
   RefreshCw,
@@ -26,7 +25,6 @@ export default function DashboardPage() {
   const { 
     userProfile, 
     userVideos, 
-    totalVideos,
     isLoading, 
     error, 
     lastUpdated,

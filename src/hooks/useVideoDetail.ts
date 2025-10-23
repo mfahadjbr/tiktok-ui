@@ -43,8 +43,8 @@ export default function useVideoDetail() {
       } else {
         throw new Error(data.message || 'Video not found');
       }
-    } catch (err: any) {
-      const message = err?.message || 'Failed to fetch video details';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch video details';
       dispatch({ type: 'SET_ERROR', payload: message });
       console.error('❌ TikTok video detail error:', err);
       throw err;

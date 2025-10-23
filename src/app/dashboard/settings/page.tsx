@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
-import { Key, Trash2, Save, AlertTriangle, Twitter } from "lucide-react"
+import { Key, Trash2, Save, AlertTriangle } from "lucide-react"
 
 export default function SettingsPage() {
   const [geminiKey, setGeminiKey] = useState("")
