@@ -29,7 +29,6 @@ export default function VideoUrlPostPage() {
     videoUrl: "",
     text: ""
   })
-  const [postType, setPostType] = useState<'direct' | 'draft'>('draft')
 
   const {
     isLoading,
@@ -39,7 +38,6 @@ export default function VideoUrlPostPage() {
     uploadStatus,
     lastResponse,
     uploadVideoFromUrl,
-    uploadVideoDraftFromUrl,
     clearError,
     resetState
   } = useTikTokPost()
@@ -68,18 +66,10 @@ export default function VideoUrlPostPage() {
     }
 
     try {
-      let response
-      if (postType === 'direct') {
-        response = await uploadVideoFromUrl(formData.videoUrl, formData.text)
-      } else {
-        response = await uploadVideoDraftFromUrl(formData.videoUrl, formData.text)
-      }
+      const response = await uploadVideoFromUrl(formData.videoUrl, formData.text)
 
       if (response.success) {
         toast.success(response.message)
-        if (postType === 'draft') {
-          toast.info("Check your TikTok app to complete the post!")
-        }
         // Reset form
         setFormData({ videoUrl: "", text: "" })
       } else {
@@ -91,10 +81,6 @@ export default function VideoUrlPostPage() {
     }
   }
 
-  const handlePostTypeChange = (type: 'direct' | 'draft') => {
-    setPostType(type)
-    clearError()
-  }
 
   return (
     <DashboardLayout>
@@ -127,35 +113,6 @@ export default function VideoUrlPostPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Post Type Selection */}
-                <div className="mb-6">
-                  <Label className="text-[#C5C5D2] font-medium mb-3 block">Post Type</Label>
-                  <div className="flex space-x-4">
-                    <Button
-                      type="button"
-                      variant={postType === 'draft' ? 'default' : 'outline'}
-                      onClick={() => handlePostTypeChange('draft')}
-                      className={postType === 'draft' ? 'bg-linear-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white' : 'bg-[#1A103D]/50 border-[#6C63FF]/30 text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white'}
-                    >
-                      Draft Post
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={postType === 'direct' ? 'default' : 'outline'}
-                      onClick={() => handlePostTypeChange('direct')}
-                      className={postType === 'direct' ? 'bg-linear-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white' : 'bg-[#1A103D]/50 border-[#6C63FF]/30 text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white'}
-                    >
-                      Direct Post
-                    </Button>
-                  </div>
-                  <p className="text-[#C5C5D2] text-sm mt-2">
-                    {postType === 'draft' 
-                      ? 'Draft posts go to your TikTok inbox for review' 
-                      : 'Direct posts are published immediately (requires app review)'
-                    }
-                  </p>
-                </div>
-
                 {/* Video URL Input */}
                 <div className="space-y-2">
                   <Label htmlFor="videoUrl" className="text-white font-medium">
@@ -241,7 +198,7 @@ export default function VideoUrlPostPage() {
                     ) : (
                       <>
                         <Send className="h-4 w-4 mr-2" />
-                        {postType === 'draft' ? 'Save as Draft' : 'Post Now'}
+                        Upload Video
                       </>
                     )}
                   </Button>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { 
@@ -16,19 +17,27 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
-  Clock,
+  Globe,
+  Users,
+  UserCheck,
+  Lock,
   Link as LinkIcon
 } from "lucide-react"
 import Link from "next/link"
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { useTikTokPost } from "@/hooks"
 import { toast } from "sonner"
 
-export default function ImageTextPostPage() {
+export default function PhotoDirectPostPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    imageUrl: ""
+    imageUrl: "",
+    privacyLevel: "PUBLIC_TO_EVERYONE",
+    disableComment: false,
+    autoAddMusic: false,
+    brandContentToggle: false,
+    brandOrganicToggle: false
   })
 
   const {
@@ -38,7 +47,7 @@ export default function ImageTextPostPage() {
     publishId,
     uploadStatus,
     lastResponse,
-    uploadPhotoDraft,
+    uploadPhotoDirect,
     clearError,
     resetState
   } = useTikTokPost()
@@ -47,6 +56,20 @@ export default function ImageTextPostPage() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    })
+  }
+
+  const handleSelectChange = (value: string) => {
+    setFormData({
+      ...formData,
+      privacyLevel: value
+    })
+  }
+
+  const handleCheckboxChange = (name: string) => {
+    setFormData({
+      ...formData,
+      [name]: !formData[name as keyof typeof formData]
     })
   }
 
@@ -71,31 +94,52 @@ export default function ImageTextPostPage() {
         photo_urls: [formData.imageUrl],
         cover_index: 0,
         title: formData.title,
-        description: formData.description
+        description: formData.description,
+        privacy_level: formData.privacyLevel,
+        disable_comment: formData.disableComment,
+        auto_add_music: formData.autoAddMusic,
+        brand_content_toggle: formData.brandContentToggle,
+        brand_organic_toggle: formData.brandOrganicToggle
       }
 
-      const response = await uploadPhotoDraft(request)
+      const response = await uploadPhotoDirect(request)
 
       if (response.success) {
         toast.success(response.message)
-          toast.info("Check your TikTok app to complete the post!")
+        toast.info("Your photo has been posted to TikTok!")
         // Reset form
-        setFormData({ title: "", description: "", imageUrl: "" })
+        setFormData({ 
+          title: "", 
+          description: "", 
+          imageUrl: "",
+          privacyLevel: "PUBLIC_TO_EVERYONE",
+          disableComment: false,
+          autoAddMusic: false,
+          brandContentToggle: false,
+          brandOrganicToggle: false
+        })
       } else {
         toast.error(response.message)
       }
     } catch (error) {
       console.error('Upload error:', error)
-      toast.error("Failed to upload image. Please try again.")
+      toast.error("Failed to upload photo. Please try again.")
     }
   }
+
+  const privacyOptions = [
+    { value: "PUBLIC_TO_EVERYONE", label: "Public to Everyone", icon: Globe },
+    { value: "MUTUAL_FOLLOW_FRIENDS", label: "Mutual Follow Friends", icon: Users },
+    { value: "FOLLOWER_OF_CREATOR", label: "Followers Only", icon: UserCheck },
+    { value: "SELF_ONLY", label: "Private", icon: Lock }
+  ]
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="relative overflow-hidden bg-linear-to-br from-[#0A012A] via-[#1A103D] to-[#0A012A] rounded-2xl p-8">
-          <div className="absolute inset-0 bg-linear-to-r from-[#6C63FF]/10 via-[#FF2E97]/10 to-[#6C63FF]/10"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-[#FF2E97]/10 via-[#6C63FF]/10 to-[#FF2E97]/10"></div>
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           <div className="relative z-10">
             <div className="flex items-center space-x-4 mb-4">
@@ -103,8 +147,8 @@ export default function ImageTextPostPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-white">TikTok Photo Draft Post</h1>
-                <p className="text-[#C5C5D2]">Create photo draft posts that go to your TikTok inbox</p>
+                <h1 className="text-3xl font-bold text-white">TikTok Photo Direct Post</h1>
+                <p className="text-[#C5C5D2]">Post photos directly to TikTok with privacy controls and advanced options</p>
               </div>
             </div>
           </div>
@@ -112,11 +156,11 @@ export default function ImageTextPostPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upload Section */}
-          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-[#1A103D]/50 backdrop-blur-sm border-0 shadow-xl shadow-[#6C63FF]/30">
+          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-[#1A103D]/50 backdrop-blur-sm border-0 shadow-xl shadow-[#FF2E97]/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center space-x-2">
-                <Clock className="h-5 w-5" />
-                <span>Create Draft Post</span>
+                <Image className="h-5 w-5" />
+                <span>Photo Upload</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -133,7 +177,7 @@ export default function ImageTextPostPage() {
                     placeholder="https://example.com/image.jpg"
                     value={formData.imageUrl}
                     onChange={handleInputChange}
-                    className="bg-[#1A103D]/50 border-[#6C63FF]/30 text-white placeholder-[#C5C5D2] focus:border-[#6C63FF] focus:ring-[#6C63FF]"
+                    className="bg-[#1A103D]/50 border-[#FF2E97]/30 text-white placeholder-[#C5C5D2] focus:border-[#FF2E97] focus:ring-[#FF2E97]"
                   />
                   <p className="text-[#C5C5D2] text-sm">
                     Enter a direct link to your image file (JPG, PNG, etc.)
@@ -196,12 +240,12 @@ export default function ImageTextPostPage() {
             </CardContent>
           </Card>
 
-          {/* Text & Schedule Section */}
-          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-[#1A103D]/50 backdrop-blur-sm border-0 shadow-xl shadow-[#6C63FF]/30">
+          {/* Content & Settings Section */}
+          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-[#1A103D]/50 backdrop-blur-sm border-0 shadow-xl shadow-[#FF2E97]/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center space-x-2">
                 <FileText className="h-5 w-5" />
-                <span>Draft Content</span>
+                <span>Post Content & Settings</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -218,7 +262,7 @@ export default function ImageTextPostPage() {
                     placeholder="Enter post title..."
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="bg-[#1A103D]/50 border-[#6C63FF]/30 text-white placeholder-[#C5C5D2] focus:border-[#6C63FF] focus:ring-[#6C63FF]"
+                    className="bg-[#1A103D]/50 border-[#FF2E97]/30 text-white placeholder-[#C5C5D2] focus:border-[#FF2E97] focus:ring-[#FF2E97]"
                     required
                   />
                   <p className="text-[#C5C5D2] text-sm">
@@ -237,7 +281,7 @@ export default function ImageTextPostPage() {
                     placeholder="Write your post description here..."
                     value={formData.description}
                     onChange={handleInputChange}
-                    className="bg-[#1A103D]/50 border-[#6C63FF]/30 text-white placeholder-[#C5C5D2] focus:border-[#6C63FF] focus:ring-[#6C63FF] min-h-[120px]"
+                    className="bg-[#1A103D]/50 border-[#FF2E97]/30 text-white placeholder-[#C5C5D2] focus:border-[#FF2E97] focus:ring-[#FF2E97] min-h-[120px]"
                     required
                   />
                   <p className="text-[#C5C5D2] text-sm">
@@ -245,16 +289,78 @@ export default function ImageTextPostPage() {
                   </p>
                 </div>
 
-                {/* Draft Info */}
-                <div className="bg-[#6C63FF]/10 border border-[#6C63FF]/30 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <Clock className="h-5 w-5 text-[#6C63FF] mt-0.5" />
-                    <div>
-                      <h4 className="text-white font-medium mb-1">Draft Post</h4>
-                      <p className="text-[#C5C5D2] text-sm">
-                        This will be saved as a draft in your TikTok inbox. You can review and edit it before publishing.
-                      </p>
-                    </div>
+                {/* Privacy Level */}
+                <div className="space-y-2">
+                  <Label className="text-white font-medium">
+                    Privacy Level
+                  </Label>
+                  <Select value={formData.privacyLevel} onValueChange={handleSelectChange}>
+                    <SelectTrigger className="bg-[#1A103D]/50 border-[#FF2E97]/30 text-white focus:border-[#FF2E97] focus:ring-[#FF2E97]">
+                      <SelectValue placeholder="Select privacy level" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1A103D] border-[#FF2E97]/30">
+                      {privacyOptions.map((option) => {
+                        const IconComponent = option.icon
+                        return (
+                          <SelectItem key={option.value} value={option.value} className="text-white hover:bg-[#FF2E97]/20">
+                            <div className="flex items-center space-x-2">
+                              <IconComponent className="h-4 w-4" />
+                              <span>{option.label}</span>
+                            </div>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[#C5C5D2] text-sm">
+                    Choose who can see your post
+                  </p>
+                </div>
+
+                {/* Advanced Options */}
+                <div className="space-y-4">
+                  <h4 className="text-white font-medium">Advanced Options</h4>
+                  
+                  <div className="space-y-3">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.disableComment}
+                        onChange={() => handleCheckboxChange('disableComment')}
+                        className="w-4 h-4 text-[#FF2E97] bg-[#1A103D]/50 border-[#FF2E97]/30 rounded focus:ring-[#FF2E97] focus:ring-2"
+                      />
+                      <span className="text-white text-sm">Disable Comments</span>
+                    </label>
+
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.autoAddMusic}
+                        onChange={() => handleCheckboxChange('autoAddMusic')}
+                        className="w-4 h-4 text-[#FF2E97] bg-[#1A103D]/50 border-[#FF2E97]/30 rounded focus:ring-[#FF2E97] focus:ring-2"
+                      />
+                      <span className="text-white text-sm">Auto Add Music</span>
+                    </label>
+
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.brandContentToggle}
+                        onChange={() => handleCheckboxChange('brandContentToggle')}
+                        className="w-4 h-4 text-[#FF2E97] bg-[#1A103D]/50 border-[#FF2E97]/30 rounded focus:ring-[#FF2E97] focus:ring-2"
+                      />
+                      <span className="text-white text-sm">Brand Content Toggle</span>
+                    </label>
+
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.brandOrganicToggle}
+                        onChange={() => handleCheckboxChange('brandOrganicToggle')}
+                        className="w-4 h-4 text-[#FF2E97] bg-[#1A103D]/50 border-[#FF2E97]/30 rounded focus:ring-[#FF2E97] focus:ring-2"
+                      />
+                      <span className="text-white text-sm">Brand Organic Toggle</span>
+                    </label>
                   </div>
                 </div>
 
@@ -263,17 +369,17 @@ export default function ImageTextPostPage() {
                   <Button
                     type="submit"
                     disabled={isLoading || !formData.imageUrl.trim() || !formData.title.trim() || !formData.description.trim()}
-                    className="flex-1 bg-linear-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white font-semibold py-3 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#6C63FF]/30"
+                    className="flex-1 bg-linear-to-r from-[#FF2E97] to-[#6C63FF] hover:from-[#E61E87] hover:to-[#5A52E6] text-white font-semibold py-3 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#FF2E97]/30"
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Creating Draft...
+                        Posting...
                       </>
                     ) : (
                       <>
-                        <Clock className="h-4 w-4 mr-2" />
-                        Save as Draft
+                        <Send className="h-4 w-4 mr-2" />
+                        Post to TikTok
                       </>
                     )}
                   </Button>
