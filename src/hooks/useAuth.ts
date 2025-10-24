@@ -3,11 +3,6 @@
 import { useReducer, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  generateSessionId, 
-  setSessionId, 
-  setActiveUserId,
-  removeSessionId,
-  removeActiveUserId,
   clearAuthData
 } from '@/lib/auth';
 import { STORAGE_KEYS } from './authConstants';

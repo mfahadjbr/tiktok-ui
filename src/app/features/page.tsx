@@ -2,7 +2,7 @@ import { Header } from "@/components/Home-Content/Header"
 import { Footer } from "@/components/Home-Content/Footer"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Clock, Target, Zap, Users, Sparkles, CheckCircle, BarChart3, Calendar, Brain, Shield, Globe, Smartphone } from "lucide-react"
+import { Target, Zap, Users, Sparkles, BarChart3, Calendar, Brain, Shield, Globe, Smartphone } from "lucide-react"
 
 export default function FeaturesPage() {
   const features = [

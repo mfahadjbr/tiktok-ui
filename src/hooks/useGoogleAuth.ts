@@ -6,43 +6,17 @@ import {
   generateSessionId, 
   setSessionId, 
   setActiveUserId,
-  removeSessionId,
-  removeActiveUserId,
   clearAuthData
 } from '@/lib/auth';
 
 import { STORAGE_KEYS, API_ENDPOINTS } from './authConstants';
-import { GoogleAuthStatus, GoogleAuthResponse } from './types/googleAuthTypes';
+import { GoogleAuthResponse } from './types/googleAuthTypes';
 import { googleAuthReducer, initialGoogleAuthState } from './reducers/googleAuthReducer';
 
 const useGoogleAuth = () => {
   const [state, dispatch] = useReducer(googleAuthReducer, initialGoogleAuthState);
   const router = useRouter();
 
-  // Check Google OAuth configuration status
-  const checkGoogleAuthStatus = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_ENDPOINTS.BASE_URL}${API_ENDPOINTS.GOOGLE_LOGIN}`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to check Google auth status');
-      }
-
-      const status: GoogleAuthStatus = await response.json();
-      dispatch({ type: 'SET_STATUS', payload: status });
-      return status;
-    } catch (err: unknown) {
-      console.error('Error checking Google auth status:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to check Google auth status';
-      dispatch({ type: 'SET_ERROR', payload: errorMessage });
-      return null;
-    }
-  }, []);
 
   // Initiate Google OAuth login
   const initiateGoogleLogin = useCallback(async () => {
@@ -140,8 +114,7 @@ const useGoogleAuth = () => {
         
         console.log('✅ Google authentication successful with session tracking');
 
-        // Get the redirect URL from localStorage
-        const redirectUrl = localStorage.getItem(STORAGE_KEYS.GOOGLE_AUTH_REDIRECT);
+        // Clean up redirect URL from localStorage
         localStorage.removeItem(STORAGE_KEYS.GOOGLE_AUTH_REDIRECT);
 
         // Always redirect to connect page after successful Google auth
@@ -172,7 +145,7 @@ const useGoogleAuth = () => {
               console.log('ℹ️ No Gemini key found (null) [Google auth]');
             }
           }
-        } catch (e) {
+        } catch {
           console.warn('⚠️ Gemini key fetch failed after Google login (ignored)');
         }
 
@@ -197,7 +170,6 @@ const useGoogleAuth = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     const error = urlParams.get('error');
-    const state = urlParams.get('state');
 
     if (error) {
       dispatch({ type: 'SET_ERROR', payload: `Google OAuth error: ${error}` });

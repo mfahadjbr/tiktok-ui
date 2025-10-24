@@ -3,7 +3,7 @@
 import { useCallback, useReducer } from 'react';
 import { STORAGE_KEYS, API_ENDPOINTS } from './authConstants';
 import { initialVideoDetailState, videoDetailReducer } from './reducers/videoDetailReducer';
-import type { VideoQueryResponse, VideoDetailState } from './types/videoDetailTypes';
+import type { VideoQueryResponse } from './types/videoDetailTypes';
 
 export default function useVideoDetail() {
   const [state, dispatch] = useReducer(videoDetailReducer, initialVideoDetailState);

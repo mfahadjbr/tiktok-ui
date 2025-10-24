@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,14 +26,22 @@ interface PostStatusCheckerProps {
 
 export const PostStatusChecker = ({ publishId, onStatusUpdate }: PostStatusCheckerProps) => {
   const [inputPublishId, setInputPublishId] = useState(publishId || '')
-  const [statusData, setStatusData] = useState<any>(null)
+  const [statusData, setStatusData] = useState<{
+    success: boolean;
+    message: string;
+    data?: {
+      status?: string;
+      publish_id?: string;
+      error?: string;
+    };
+  } | null>(null)
   const [isChecking, setIsChecking] = useState(false)
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null)
 
   const { checkPostStatus, isLoading, error } = useTikTokPost()
 
-  const handleCheckStatus = async (publishIdToCheck?: string) => {
+  const handleCheckStatus = useCallback(async (publishIdToCheck?: string) => {
     const id = publishIdToCheck || inputPublishId
     if (!id.trim()) {
       toast.error("Please enter a publish ID")
@@ -57,7 +65,7 @@ export const PostStatusChecker = ({ publishId, onStatusUpdate }: PostStatusCheck
     } finally {
       setIsChecking(false)
     }
-  }
+  }, [inputPublishId, checkPostStatus, onStatusUpdate])
 
   const toggleAutoRefresh = () => {
     if (autoRefresh) {
@@ -82,7 +90,7 @@ export const PostStatusChecker = ({ publishId, onStatusUpdate }: PostStatusCheck
       setInputPublishId(publishId)
       handleCheckStatus(publishId)
     }
-  }, [publishId])
+  }, [publishId, handleCheckStatus])
 
   useEffect(() => {
     return () => {

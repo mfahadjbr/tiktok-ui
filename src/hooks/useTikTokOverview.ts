@@ -5,8 +5,7 @@ import { STORAGE_KEYS, API_ENDPOINTS } from './authConstants';
 import { initialTikTokOverviewState, tiktokOverviewReducer } from './reducers/tiktokOverviewReducer';
 import type { 
   TikTokUserProfileResponse, 
-  TikTokUserVideosResponse,
-  TikTokOverviewState 
+  TikTokUserVideosResponse
 } from './types/tiktokOverviewTypes';
 
 export default function useTikTokOverview() {

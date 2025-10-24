@@ -6,12 +6,10 @@ import {
   generateSessionId, 
   setSessionId, 
   setActiveUserId,
-  removeSessionId,
-  removeActiveUserId,
   clearAuthData
 } from '@/lib/auth';
 import { STORAGE_KEYS, API_ENDPOINTS } from './authConstants';
-import { SignupRequest, SignupResponse, AuthError } from './types/authTypes';
+import { SignupRequest, SignupResponse } from './types/authTypes';
 
 interface UseSignupState {
   isLoading: boolean;

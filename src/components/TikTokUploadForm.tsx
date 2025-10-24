@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,7 +24,29 @@ import { toast } from "sonner"
 
 interface UploadFormProps {
   type: 'video' | 'image'
-  onSuccess?: (response: any) => void
+  onSuccess?: (response: {
+    success: boolean;
+    message: string;
+    data?: {
+      publish_id?: string;
+      upload_url?: string;
+      error?: {
+        code: string;
+        message: string;
+        log_id: string;
+      };
+      upload_status?: string;
+      file_info?: {
+        filename: string;
+        file_size: number;
+        content_type: string;
+        chunk_size: number;
+        total_chunks: number;
+        upload_completed: boolean;
+      };
+      instructions?: string;
+    };
+  }) => void
   onError?: (error: string) => void
 }
 
@@ -44,16 +66,11 @@ export const TikTokUploadForm = ({ type, onSuccess, onError }: UploadFormProps) 
     isLoading,
     error,
     uploadProgress,
-    publishId,
-    uploadStatus,
     lastResponse,
     uploadVideoDirect,
     uploadVideoDraft,
-    uploadVideoFromUrl,
-    uploadVideoDraftFromUrl,
     uploadPhotoDirect,
     uploadPhotoDraft,
-    checkPostStatus,
     clearError,
     resetState
   } = useTikTokPost()

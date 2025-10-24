@@ -6,12 +6,10 @@ import {
   generateSessionId, 
   setSessionId, 
   setActiveUserId,
-  removeSessionId,
-  removeActiveUserId,
   clearAuthData
 } from '@/lib/auth';
 import { STORAGE_KEYS, API_ENDPOINTS } from './authConstants';
-import { LoginRequest, LoginResponse, AuthError } from './types/authTypes';
+import { LoginRequest, LoginResponse } from './types/authTypes';
 
 interface UseLoginState {
   isLoading: boolean;
@@ -116,7 +114,7 @@ const useLogin = (): UseLoginReturn => {
             console.log('ℹ️ No Gemini key found (null) [login]');
           }
         }
-      } catch (e) {
+      } catch {
         console.warn('⚠️ Gemini key fetch failed after login (ignored)');
       }
 

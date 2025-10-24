@@ -56,7 +56,11 @@ export interface TikTokPhotoPostResponse {
       total_processed: number;
       successful_count: number;
       failed_count: number;
-      failed_uploads: any[];
+      failed_uploads: Array<{
+        filename: string;
+        error: string;
+        reason: string;
+      }>;
     };
     uploaded_images?: Array<{
       filename: string;

@@ -2,13 +2,10 @@ import { useReducer, useCallback } from 'react';
 import { API_ENDPOINTS } from './authConstants';
 import { 
   TikTokPostState, 
-  TikTokPostActions, 
   TikTokPostHook,
-  TikTokPostUploadRequest,
   TikTokPostUploadResponse,
   TikTokPhotoPostRequest,
   TikTokPhotoPostResponse,
-  TikTokPostStatusRequest,
   TikTokPostStatusResponse
 } from './types/tiktokPostTypes';
 

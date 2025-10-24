@@ -2,7 +2,7 @@ import { Header } from "@/components/Home-Content/Header"
 import { Footer } from "@/components/Home-Content/Footer"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, Target, Award, Heart, TrendingUp, Globe, Shield, Zap } from "lucide-react"
+import { Users, Target, Heart, TrendingUp, Globe, Shield, Zap } from "lucide-react"
 
 export default function AboutPage() {
   const stats = [
