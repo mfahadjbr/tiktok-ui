@@ -3,28 +3,49 @@
 import { DashboardLayout } from "@/components/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Progress } from "@/components/ui/progress"
 import { 
   Video, 
   FileText, 
-  Calendar,
-  Clock,
   Upload,
   ArrowLeft,
   Send,
-  Play
+  CheckCircle,
+  AlertCircle,
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useRef } from "react"
+import { useTikTokPost } from "@/hooks"
+import { toast } from "sonner"
 
 export default function VideoTextPostPage() {
   const [formData, setFormData] = useState({
-    text: "",
-    scheduledDate: "",
-    scheduledTime: ""
+    text: ""
   })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [videoPreview, setVideoPreview] = useState<string | null>(null)
+  const [postType, setPostType] = useState<'direct' | 'draft'>('draft')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const {
+    isLoading,
+    error,
+    uploadProgress,
+    publishId,
+    uploadStatus,
+    lastResponse,
+    uploadVideoDirect,
+    uploadVideoDraft,
+    uploadVideoFromUrl,
+    uploadVideoDraftFromUrl,
+    checkPostStatus,
+    clearError,
+    resetState
+  } = useTikTokPost()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -33,26 +54,88 @@ export default function VideoTextPostPage() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      const url = URL.createObjectURL(file)
+      setVideoPreview(url)
+      clearError()
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
-    // Handle post creation logic here
-    console.log("Creating video + text post:", formData)
+    const file = e.dataTransfer.files[0]
+    if (file && file.type.startsWith('video/')) {
+      setSelectedFile(file)
+      const url = URL.createObjectURL(file)
+      setVideoPreview(url)
+      clearError()
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!selectedFile || !formData.text.trim()) {
+      toast.error("Please select a video file and enter a description")
+      return
+    }
+
+    try {
+      let response
+      if (postType === 'direct') {
+        response = await uploadVideoDirect(selectedFile, formData.text)
+      } else {
+        response = await uploadVideoDraft(selectedFile, formData.text)
+      }
+
+      if (response.success) {
+        toast.success(response.message)
+        if (postType === 'draft') {
+          toast.info("Check your TikTok app to complete the post!")
+        }
+        // Reset form
+        setFormData({ text: "" })
+        setSelectedFile(null)
+        setVideoPreview(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error("Failed to upload video. Please try again.")
+    }
+  }
+
+  const handlePostTypeChange = (type: 'direct' | 'draft') => {
+    setPostType(type)
+    clearError()
   }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="relative overflow-hidden bg-linear-to-br from-black via-gray-900 to-black rounded-2xl p-8">
+        <div className="relative overflow-hidden bg-linear-to-br from-[#0A012A] via-[#1A103D] to-[#0A012A] rounded-2xl p-8">
+          <div className="absolute inset-0 bg-linear-to-r from-[#6C63FF]/10 via-[#FF2E97]/10 to-[#6C63FF]/10"></div>
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           <div className="relative z-10">
             <div className="flex items-center space-x-4 mb-4">
-              <Link href="/dashboard/upload" className="p-2 text-gray-400 hover:text-white transition-colors">
+              <Link href="/dashboard/upload" className="p-2 text-[#C5C5D2] hover:text-white transition-colors">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
               <div>
                 <h1 className="text-3xl font-bold text-white">Create Video + Text Post</h1>
-                <p className="text-gray-300">Upload videos and write engaging descriptions</p>
+                <p className="text-[#C5C5D2]">Upload videos and write engaging descriptions</p>
               </div>
             </div>
           </div>
@@ -60,7 +143,7 @@ export default function VideoTextPostPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upload Section */}
-          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-[#1A103D]/50 backdrop-blur-sm border-0 shadow-xl shadow-[#6C63FF]/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center space-x-2">
                 <Video className="h-5 w-5" />
@@ -68,32 +151,118 @@ export default function VideoTextPostPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center hover:border-purple-500 transition-colors">
-                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-300 mb-2">Drag and drop video here</p>
-                <p className="text-gray-400 text-sm mb-4">or click to browse</p>
-                <Button variant="outline" className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
+              {/* Post Type Selection */}
+              <div className="mb-6">
+                <Label className="text-[#C5C5D2] font-medium mb-3 block">Post Type</Label>
+                <div className="flex space-x-4">
+                  <Button
+                    type="button"
+                    variant={postType === 'draft' ? 'default' : 'outline'}
+                    onClick={() => handlePostTypeChange('draft')}
+                    className={postType === 'draft' ? 'bg-linear-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white' : 'bg-[#1A103D]/50 border-[#6C63FF]/30 text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white'}
+                  >
+                    Draft Post
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={postType === 'direct' ? 'default' : 'outline'}
+                    onClick={() => handlePostTypeChange('direct')}
+                    className={postType === 'direct' ? 'bg-linear-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white' : 'bg-[#1A103D]/50 border-[#6C63FF]/30 text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white'}
+                  >
+                    Direct Post
+                  </Button>
+                </div>
+                <p className="text-[#C5C5D2] text-sm mt-2">
+                  {postType === 'draft' 
+                    ? 'Draft posts go to your TikTok inbox for review' 
+                    : 'Direct posts are published immediately (requires app review)'
+                  }
+                </p>
+              </div>
+
+              {/* File Upload */}
+              <div 
+                className="border-2 border-dashed border-[#6C63FF]/30 rounded-xl p-8 text-center hover:border-[#6C63FF] transition-colors cursor-pointer"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-12 w-12 text-[#C5C5D2] mx-auto mb-4" />
+                <p className="text-white mb-2">Drag and drop video here</p>
+                <p className="text-[#C5C5D2] text-sm mb-4">or click to browse</p>
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  className="bg-[#1A103D]/50 border-[#6C63FF]/30 text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    fileInputRef.current?.click()
+                  }}
+                >
                   Choose Video File
                 </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
               </div>
+
+              {/* Upload Progress */}
+              {isLoading && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-white text-sm">Uploading...</span>
+                    <span className="text-[#C5C5D2] text-sm">{uploadProgress}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="w-full" />
+                </div>
+              )}
+
+              {/* Error Display */}
+              {error && (
+                <Alert className="mt-4 border-red-500 bg-red-500/10">
+                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <AlertDescription className="text-red-300">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Success Display */}
+              {lastResponse?.success && (
+                <Alert className="mt-4 border-green-500 bg-green-500/10">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <AlertDescription className="text-green-300">
+                    {lastResponse.message}
+                  </AlertDescription>
+                </Alert>
+              )}
               
               {/* Video Preview */}
+              {videoPreview && (
               <div className="mt-6">
-                <div className="aspect-video bg-gray-700 rounded-lg flex items-center justify-center relative">
-                  <Play className="h-12 w-12 text-gray-500" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="w-full bg-gray-600 rounded-full h-1">
-                      <div className="bg-purple-500 h-1 rounded-full" style={{width: '30%'}}></div>
-                    </div>
-                    <p className="text-gray-400 text-sm mt-2">0:45 / 2:30</p>
+                  <div className="aspect-video bg-[#1A103D]/50 rounded-lg overflow-hidden relative">
+                    <video
+                      src={videoPreview}
+                      controls
+                      className="w-full h-full object-cover"
+                    />
                   </div>
+                  {selectedFile && (
+                    <p className="text-[#C5C5D2] text-sm mt-2">
+                      File: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                  )}
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Text & Schedule Section */}
-          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+          {/* Text Content Section */}
+          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-[#1A103D]/50 backdrop-blur-sm border-0 shadow-xl shadow-[#6C63FF]/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center space-x-2">
                 <FileText className="h-5 w-5" />
@@ -104,7 +273,7 @@ export default function VideoTextPostPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Text Content */}
                 <div className="space-y-2">
-                  <Label htmlFor="text" className="text-gray-300 font-medium">
+                  <Label htmlFor="text" className="text-white font-medium">
                     Video Description
                   </Label>
                   <Textarea
@@ -113,114 +282,38 @@ export default function VideoTextPostPage() {
                     placeholder="Write your video description here..."
                     value={formData.text}
                     onChange={handleInputChange}
-                    className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500 min-h-[120px]"
+                    className="bg-[#1A103D]/50 border-[#6C63FF]/30 text-white placeholder-[#C5C5D2] focus:border-[#6C63FF] focus:ring-[#6C63FF] min-h-[120px]"
                     required
                   />
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-[#C5C5D2] text-sm">
                     {formData.text.length}/280 characters
                   </p>
-                </div>
-
-                {/* Scheduling */}
-                <div className="space-y-4">
-                  <Label className="text-gray-300 font-medium flex items-center space-x-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>Schedule Post</span>
-                  </Label>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="scheduledDate" className="text-gray-400 text-sm">
-                        Date
-                      </Label>
-                      <Input
-                        id="scheduledDate"
-                        name="scheduledDate"
-                        type="date"
-                        value={formData.scheduledDate}
-                        onChange={handleInputChange}
-                        className="bg-gray-700/50 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="scheduledTime" className="text-gray-400 text-sm">
-                        Time
-                      </Label>
-                      <Input
-                        id="scheduledTime"
-                        name="scheduledTime"
-                        type="time"
-                        value={formData.scheduledTime}
-                        onChange={handleInputChange}
-                        className="bg-gray-700/50 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500"
-                      />
-                    </div>
-                  </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex space-x-4 pt-4">
                   <Button
                     type="submit"
-                    className="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 rounded-2xl transition-all duration-300"
+                    disabled={isLoading || !selectedFile || !formData.text.trim()}
+                    className="flex-1 bg-linear-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white font-semibold py-3 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#6C63FF]/30"
                   >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
                     <Send className="h-4 w-4 mr-2" />
-                    Post Now
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white px-6 py-3 rounded-2xl"
-                  >
-                    <Clock className="h-4 w-4 mr-2" />
-                    Schedule
+                        {postType === 'draft' ? 'Save as Draft' : 'Post Now'}
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>
             </CardContent>
           </Card>
         </div>
-
-        {/* Preview Section */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white">Post Preview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-gray-700/50 rounded-xl p-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">U</span>
-                </div>
-                <div>
-                  <p className="text-white font-medium">Learn Ai With Uzair</p>
-                  <p className="text-gray-400 text-sm">@MuhammadUz1654</p>
-                </div>
-              </div>
-              
-              <p className="text-gray-200 mb-4 leading-relaxed">
-                {formData.text || "Your video description will appear here..."}
-              </p>
-              
-              <div className="aspect-video bg-gray-600 rounded-lg flex items-center justify-center relative mb-4">
-                <Play className="h-12 w-12 text-gray-400" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <div className="w-full bg-gray-500 rounded-full h-1">
-                    <div className="bg-purple-500 h-1 rounded-full" style={{width: '30%'}}></div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="text-gray-400 text-sm">
-                {formData.scheduledDate && formData.scheduledTime ? (
-                  <p>Scheduled for: {formData.scheduledDate} at {formData.scheduledTime}</p>
-                ) : (
-                  <p>Posted now</p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   )
