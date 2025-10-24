@@ -9,7 +9,7 @@ export const API_ENDPOINTS = {
   BASE_URL: 'https://backend.postsiva.com',
   SIGNUP: '/auth/signup',
   LOGIN: '/auth/login',
-  GOOGLE_STATUS: '/auth/google/status',
+  GOOGLE_LOGIN: '/auth/google/login',
   GOOGLE_CALLBACK: '/auth/google/callback',
   GEMINI_KEYS: '/gemini-keys/',
   TIKTOK_CREATE_TOKEN: '/tiktok/create-token',

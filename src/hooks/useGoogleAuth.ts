@@ -22,7 +22,7 @@ const useGoogleAuth = () => {
   // Check Google OAuth configuration status
   const checkGoogleAuthStatus = useCallback(async () => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.BASE_URL}${API_ENDPOINTS.GOOGLE_STATUS}`, {
+      const response = await fetch(`${API_ENDPOINTS.BASE_URL}${API_ENDPOINTS.GOOGLE_LOGIN}`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -50,21 +50,19 @@ const useGoogleAuth = () => {
     dispatch({ type: 'SET_ERROR', payload: null });
 
     try {
-      // First check if Google OAuth is configured
-      const status = await checkGoogleAuthStatus();
+      // Build the Google OAuth URL with proper redirect_uri
+      const baseUrl = window.location.origin; // This will be your local dev URL (e.g., http://localhost:3000)
+      const redirectUri = `${baseUrl}/auth/google/callback`;
       
-      if (!status?.google_oauth_configured) {
-        throw new Error('Google OAuth is not configured');
-      }
-
-      // Redirect to Google OAuth login URL
-      const loginUrl = `${API_ENDPOINTS.BASE_URL}${status.login_url}`;
+      // Build the login URL with redirect_uri parameter
+      const loginUrl = `${API_ENDPOINTS.BASE_URL}${API_ENDPOINTS.GOOGLE_LOGIN}?redirect_uri=${encodeURIComponent(redirectUri)}`;
       
       // Store the current URL to redirect back after login
       const currentUrl = window.location.href;
       localStorage.setItem(STORAGE_KEYS.GOOGLE_AUTH_REDIRECT, currentUrl);
       
       console.log('Redirecting to Google OAuth:', loginUrl);
+      console.log('Redirect URI:', redirectUri);
       
       // Redirect to Google OAuth
       window.location.href = loginUrl;
@@ -75,7 +73,7 @@ const useGoogleAuth = () => {
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [checkGoogleAuthStatus]);
+  }, []);
 
   // Handle Google OAuth callback
   const handleGoogleCallback = useCallback(async (code: string, state?: string) => {
@@ -146,10 +144,9 @@ const useGoogleAuth = () => {
         const redirectUrl = localStorage.getItem(STORAGE_KEYS.GOOGLE_AUTH_REDIRECT);
         localStorage.removeItem(STORAGE_KEYS.GOOGLE_AUTH_REDIRECT);
 
-        // Redirect to the original URL or dashboard
-        const targetUrl = redirectUrl && redirectUrl !== window.location.href 
-          ? redirectUrl 
-          : '/dashboard';
+        // Always redirect to connect page after successful Google auth
+        // This ensures consistent behavior like simple auth
+        const targetUrl = '/auth/connect';
         
         // Quietly fetch and cache Gemini API key (non-blocking, ignore errors)
         try {
@@ -214,10 +211,7 @@ const useGoogleAuth = () => {
     }
   }, []);
 
-  // Check Google auth status on mount
-  useEffect(() => {
-    checkGoogleAuthStatus();
-  }, [checkGoogleAuthStatus]);
+  // Note: No need to check Google auth status on mount since we're using the login endpoint directly
 
   return {
     isLoading: state.isLoading,
@@ -225,7 +219,6 @@ const useGoogleAuth = () => {
     authStatus: state.authStatus,
     initiateGoogleLogin,
     handleGoogleCallback,
-    checkGoogleAuthStatus,
   };
 };
 
